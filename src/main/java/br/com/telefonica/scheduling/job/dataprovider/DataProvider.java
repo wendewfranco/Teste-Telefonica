@@ -1,65 +1,80 @@
 package br.com.telefonica.scheduling.job.dataprovider;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import br.com.telefonica.scheduling.job.dataprovider.entity.JobEntity;
 import br.com.telefonica.scheduling.job.dataprovider.repository.JobRepository;
 
 @EnableScheduling
+@Component
 public class DataProvider {
 
 	@Autowired
 	private JobRepository jobRepository;
 	
+	private boolean controler = false;
+	
 	private int horaMaximaSomagetDataMaximaConclusao = 8;
 	
-	@Scheduled(cron = "* * * * * *")
-	List<List<Integer>>executarJob(LocalDate JanelaExecucao){
-		
-		
-		
-		List<List<Integer>> ListaDeJobsProcessados = null;
-		
+	@Scheduled(cron = "1 * * * * *")
+	public void executarJob(){
+
+		LocalDateTime JanelaDeExecucaoInicial = LocalDateTime.of(2019, 11, 10, 9, 00, 00);
+		LocalDateTime JanelaDeExecucaoFinal = LocalDateTime.of(2019, 11, 11, 12, 00, 00);
+
+		List<Integer> listaDeJobsJaExecutados = new ArrayList<>();
+		List<List<Integer>> ListaDeJobsProcessados = new ArrayList<>();
+
+
+		Comparator <JobEntity> porData =
+				(JobEntity time1, JobEntity time2) -> time1.getDataMaximaConclusao().compareTo( time2.getDataMaximaConclusao());
+
 		List<JobEntity> findAllJobs = jobRepository.findAll();
-	
+		findAllJobs.sort(porData);
+
+		System.out.println("TESTE");
+
 		findAllJobs.forEach(job -> {
-			for (int i = 0; i < findAllJobs.size(); i++) {
-				List<Integer> listaDeIds = new ArrayList<>();
-				if(job.getDataMaximaConclusao().getHour() + findAllJobs.get(i).getTempoEstimado().getHour() == horaMaximaSomagetDataMaximaConclusao
-						&& job.getId() != findAllJobs.get(i).getId() || job.getTempoEstimado().getHour() == 8) {
-					listaDeIds.add(job.getId());
-					listaDeIds.add(findAllJobs.get(i).getId());	
-					ListaDeJobsProcessados.add(listaDeIds);
+			horaMaximaSomagetDataMaximaConclusao = 8;
+
+
+			List<Integer> listaDeIds = new ArrayList<>();
+			while(horaMaximaSomagetDataMaximaConclusao != 0) {
+				findAllJobs.forEach(nextJob -> {
+					System.out.println("PARANDO FOREACH");
+					if(job.getTempoEstimado() + nextJob.getTempoEstimado() == horaMaximaSomagetDataMaximaConclusao
+						&& job.getId() != nextJob.getId()) {
+
+						System.out.println("TESTE");
+
+						listaDeIds.add(job.getId());
+						listaDeIds.add(nextJob.getId());
+						ListaDeJobsProcessados.add(listaDeIds);
+
+						controler = true;
+						return;
+					}
+					if(horaMaximaSomagetDataMaximaConclusao == 0) {
+						listaDeIds.add(job.getId());
+						controler = true;
+					}
+			});
+				if(controler == true) {
 					return;
-				} 
-				
-				if(findAllJobs.size() == findAllJobs.size()) {
-					listaDeIds.add(job.getId());
-					listaDeIds.add(findAllJobs.get(i).getId());	
-					ListaDeJobsProcessados.add(listaDeIds);
-					horaMaximaSomagetDataMaximaConclusao = horaMaximaSomagetDataMaximaConclusao -1 ;
-					i = 0;
 				}
-				if(horaMaximaSomagetDataMaximaConclusao == 1) {
-					listaDeIds.add(job.getId());
-					listaDeIds.add(findAllJobs.get(i).getId());	
-					ListaDeJobsProcessados.add(listaDeIds);
-					return;
-				}
+				horaMaximaSomagetDataMaximaConclusao--;
 			}
 		});
-			 
-		return ListaDeJobsProcessados;
+
+		System.out.println(ListaDeJobsProcessados);
 	}
 	
 }

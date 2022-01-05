@@ -1,24 +1,26 @@
 package br.com.telefonica.scheduling.job.dataprovider.entity;
 
-import java.time.LocalDate;
+
+
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
 public class JobEntity {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 	
 	private String descricao;
 	
 	private LocalDateTime dataMaximaConclusao;
 	
-	private LocalDateTime tempoEstimado;
+	private Integer tempoEstimado;
 	
 	public Integer getId() {
 		return id;
@@ -44,11 +46,11 @@ public class JobEntity {
 		this.dataMaximaConclusao = dataMaximaConclusao;
 	}
 
-	public LocalDateTime getTempoEstimado() {
+	public Integer getTempoEstimado() {
 		return tempoEstimado;
 	}
 
-	public void setTempoEstimado(LocalDateTime tempoEstimado) {
+	public void setTempoEstimado(Integer tempoEstimado) {
 		this.tempoEstimado = tempoEstimado;
 	}
 }
